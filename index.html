@@ -13,6 +13,7 @@
       <strong>all</strong> records in this toy list.
     </p>
 
+    <!-- Main search form (with county text box) -->
     <form id="lookup-form">
       <div class="field">
         <label for="firstName">First name (optional)</label>
@@ -25,16 +26,30 @@
       </div>
 
       <div class="field">
-        <label for="county">County (optional)</label>
-        <select id="county" name="county">
-          <!-- We keep a default "all counties" option -->
-          <option value="">All counties</option>
-          <!-- JS will add one <option> per county from voters.csv -->
-        </select>
+        <label for="county">County (optional, free text)</label>
+        <input id="county" name="county" type="text" />
       </div>
 
       <button type="submit">Search</button>
     </form>
+
+    <!-- Extra section: browse by county via dropdown -->
+    <section class="county-browse">
+      <h2>Browse by county</h2>
+      <p>Select a county to see all records from that county.</p>
+
+      <form id="county-form">
+        <div class="field">
+          <label for="countySelect">County</label>
+          <select id="countySelect" name="countySelect">
+            <option value="">Choose a county</option>
+            <!-- JS will add one <option> per county from voters.csv -->
+          </select>
+        </div>
+
+        <button type="submit">Show county</button>
+      </form>
+    </section>
 
     <section id="results"></section>
   </main>
