@@ -1,8 +1,8 @@
 // script.js
 
-let voters = []; // will hold our parsed CSV data
+let voters = [];
 
-// Naive CSV parser: good enough for our simple file (no commas in fields)
+// Naive CSV parser
 function parseCsv(text) {
   const lines = text.trim().split("\n");
   const headers = lines[0].split(",");
