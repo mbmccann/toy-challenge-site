@@ -18,71 +18,6 @@ function parseCsv(text) {
   });
 }
 
-// Build list of unique counties and populate the dropdown
-function populateCountyDropdown() {
-  const countySelect = document.getElementById("countySelect");
-  if (!countySelect) return;
-
-  // Start with the existing "Choose a county" option
-  // then append the real counties
-  const countySet = new Set();
-  voters.forEach((v) => {
-    const c = (v.county || "").trim();
-    if (c) {
-      countySet.add(c);
-    }
-  });
-
-  const counties = Array.from(countySet).sort((a, b) =>
-    a.localeCompare(b)
-  );
-
-  counties.forEach((county) => {
-    const opt = document.createElement("option");
-    opt.value = county;
-    opt.textContent = county;
-    countySelect.appendChild(opt);
-  });
-}
-
-// Helper to render matches safely using textContent
-function renderMatches(matches, description, resultsDiv) {
-  resultsDiv.innerHTML = "";
-
-  if (matches.length === 0) {
-    const p = document.createElement("p");
-    p.textContent = "No matches found.";
-    resultsDiv.appendChild(p);
-    return;
-  }
-
-  const summary = document.createElement("p");
-  summary.textContent = `Showing ${matches.length} record${
-    matches.length > 1 ? "s" : ""
-  } ${description}.`;
-  resultsDiv.appendChild(summary);
-
-  matches.forEach((m) => {
-    const item = document.createElement("div");
-    item.className = "result-item";
-
-    const nameEl = document.createElement("strong");
-    nameEl.textContent = `${m.first_name} ${m.last_name}`;
-    item.appendChild(nameEl);
-
-    const countyEl = document.createElement("div");
-    countyEl.textContent = `County: ${m.county}`;
-    item.appendChild(countyEl);
-
-    const reasonEl = document.createElement("div");
-    reasonEl.className = "result-reason";
-    reasonEl.textContent = `Reason: ${m.reason}`;
-    item.appendChild(reasonEl);
-
-    resultsDiv.appendChild(item);
-  });
-}
-
 // Load voters.csv when the page loads
 async function loadData() {
   try {
@@ -90,14 +25,13 @@ async function loadData() {
     const text = await res.text();
     voters = parseCsv(text);
     console.log("Loaded voters:", voters);
-    populateCountyDropdown();
   } catch (err) {
     console.error("Error loading CSV:", err);
   }
 }
 
-// Handle main search form
-function setupSearchForm() {
+// Handle form submission
+function setupForm() {
   const form = document.getElementById("lookup-form");
   const resultsDiv = document.getElementById("results");
 
@@ -116,6 +50,7 @@ function setupSearchForm() {
     const hasLast = lastLower.length > 0;
     const hasCounty = countyLower.length > 0;
 
+    // Filter the voters array based on whichever fields the user filled in.
     const matches = voters.filter((v) => {
       const vFirst = (v.first_name || "").toLowerCase();
       const vLast = (v.last_name || "").toLowerCase();
@@ -130,49 +65,62 @@ function setupSearchForm() {
         ok = ok && vLast.includes(lastLower);
       }
       if (hasCounty) {
-        // text box filter: partial match is okay
         ok = ok && vCounty.includes(countyLower);
       }
 
       return ok;
     });
 
-    renderMatches(matches, "matching your filters", resultsDiv);
-  });
-}
+    // Clear previous results
+    resultsDiv.innerHTML = "";
 
-// Handle "browse by county" form
-function setupCountyForm() {
-  const countyForm = document.getElementById("county-form");
-  const countySelect = document.getElementById("countySelect");
-  const resultsDiv = document.getElementById("results");
-
-  countyForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const selectedCounty = countySelect.value.trim();
-    if (!selectedCounty) {
-      resultsDiv.innerHTML = "";
+    // If no filters at all and no voters (e.g. data load failed)
+    if (matches.length === 0 && !hasFirst && !hasLast && !hasCounty) {
       const p = document.createElement("p");
-      p.textContent = "Please choose a county.";
+      p.textContent = "No records to show (did the data load correctly?).";
       resultsDiv.appendChild(p);
       return;
     }
 
-    const selectedLower = selectedCounty.toLowerCase();
+    if (matches.length === 0) {
+      const p = document.createElement("p");
+      p.textContent = "No matches found with those filters.";
+      resultsDiv.appendChild(p);
+      return;
+    }
 
-    const matches = voters.filter((v) => {
-      const vCounty = (v.county || "").toLowerCase();
-      return vCounty === selectedLower; // exact match for dropdown
+    // Summary line
+    const summary = document.createElement("p");
+    summary.textContent = `Showing ${matches.length} record${
+      matches.length > 1 ? "s" : ""
+    } matching your filters.`;
+    resultsDiv.appendChild(summary);
+
+    // Render each match safely using textContent
+    matches.forEach((m) => {
+      const item = document.createElement("div");
+      item.className = "result-item";
+
+      const nameEl = document.createElement("strong");
+      nameEl.textContent = `${m.first_name} ${m.last_name}`;
+      item.appendChild(nameEl);
+
+      const countyEl = document.createElement("div");
+      countyEl.textContent = `County: ${m.county}`;
+      item.appendChild(countyEl);
+
+      const reasonEl = document.createElement("div");
+      reasonEl.className = "result-reason";
+      reasonEl.textContent = `Reason: ${m.reason}`;
+      item.appendChild(reasonEl);
+
+      resultsDiv.appendChild(item);
     });
-
-    renderMatches(matches, `in ${selectedCounty} County`, resultsDiv);
   });
 }
 
-// When the page is ready, load data + set up forms
+// When the page is ready, load data + set up the form
 document.addEventListener("DOMContentLoaded", () => {
   loadData();
-  setupSearchForm();
-  setupCountyForm();
+  setupForm();
 });
