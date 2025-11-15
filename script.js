@@ -1,6 +1,6 @@
 // script.js
 
-let voters = []; // holds parsed CSV data
+let voters = [];
 
 // Naive CSV parser
 function parseCsv(text) {
@@ -18,6 +18,39 @@ function parseCsv(text) {
   });
 }
 
+// Build list of unique counties and populate the dropdown
+function populateCountyDropdown() {
+  const countySelect = document.getElementById("county");
+  if (!countySelect) return;
+
+  // Start by keeping the first "All counties" option only
+  countySelect.innerHTML = "";
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = "All counties";
+  countySelect.appendChild(allOption);
+
+  // Collect unique counties from the voters array
+  const countySet = new Set();
+  voters.forEach((v) => {
+    const c = (v.county || "").trim();
+    if (c) {
+      countySet.add(c);
+    }
+  });
+
+  const counties = Array.from(countySet).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  counties.forEach((county) => {
+    const opt = document.createElement("option");
+    opt.value = county;
+    opt.textContent = county;
+    countySelect.appendChild(opt);
+  });
+}
+
 // Load voters.csv when the page loads
 async function loadData() {
   try {
@@ -25,6 +58,7 @@ async function loadData() {
     const text = await res.text();
     voters = parseCsv(text);
     console.log("Loaded voters:", voters);
+    populateCountyDropdown();
   } catch (err) {
     console.error("Error loading CSV:", err);
   }
@@ -65,7 +99,8 @@ function setupForm() {
         ok = ok && vLast.includes(lastLower);
       }
       if (hasCounty) {
-        ok = ok && vCounty.includes(countyLower);
+        ok = ok && vCounty === countyLower;
+        // using strict equality here since dropdown options are exact names
       }
 
       return ok;
