@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Toy Voter Challenge Lookup</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Toy Voter Challenge Lookup</h1>
+    <p>
+      Enter your name and optional county to see if you appear on this
+      (fake) challenge list.
+    </p>
+
+    <form id="lookup-form">
+      <div class="field">
+        <label for="firstName">First name</label>
+        <input id="firstName" name="firstName" type="text" required />
+      </div>
+
+      <div class="field">
+        <label for="lastName">Last name</label>
+        <input id="lastName" name="lastName" type="text" required />
+      </div>
+
+      <div class="field">
+        <label for="county">County (optional)</label>
+        <input id="county" name="county" type="text" />
+      </div>
+
+      <button type="submit">Search</button>
+    </form>
+
+    <section id="results"></section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
